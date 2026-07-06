@@ -2,7 +2,7 @@
 
 [![Build](https://img.shields.io/github/actions/workflow/status/WasabiThumb/ttdev/build.yml?branch=master)](https://github.com/WasabiThumb/ttdev/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE.txt)
-[![Latest Release](https://img.shields.io/gradle-plugin-portal/v/io.github.wasabithumb.ttdev)](https://plugins.gradle.org/plugin/xyz.jpenilla.resource-factory)
+[![Latest Release](https://img.shields.io/gradle-plugin-portal/v/io.github.wasabithumb.ttdev)](https://plugins.gradle.org/plugin/io.github.wasabithumb.ttdev)
 
 TTDev ([Tiny Takeover](https://minecraft.wiki/w/Tiny_Takeover) Development) is an
 experimental Gradle plugin that mavenizes the Minecraft client, server and
