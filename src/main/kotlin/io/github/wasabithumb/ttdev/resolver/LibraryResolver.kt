@@ -47,7 +47,7 @@ class LibraryResolver(
         this.logger.info("Resolving library: $identifier")
 
         // Ensure that the content is fetched for this artifact and its dependencies
-        this.fetchContent(identifier, IdentifierStack(), false)
+        this.fetchContent(identifier, IdentifierStack(), MissingAction.FAIL)
 
         // Create the dependency object
         return this.dependencyFactory.create(
@@ -57,7 +57,7 @@ class LibraryResolver(
         )
     }
 
-    private fun fetchContent(identifier: Identifier, parents: IdentifierStack, optional: Boolean) {
+    private fun fetchContent(identifier: Identifier, parents: IdentifierStack, missingAction: MissingAction) {
         if (identifier in parents) {
             throw IllegalStateException("Library $identifier refers to itself (cyclic dependency chain)")
         }
@@ -78,11 +78,25 @@ class LibraryResolver(
             .filter { it != null }
             .findFirst()
             .orElse(null)
-            ?: if (optional) {
-                this.logger.warn("- No source could resolve transient library $identifier, skipping")
-                return
-            } else {
-                throw IllegalStateException("No source could resolve library $identifier")
+            ?: when (missingAction) {
+                MissingAction.FAIL -> throw IllegalStateException("No source could resolve library $identifier")
+                MissingAction.SKIP -> {
+                    this.logger.warn("- No source could resolve transient library $identifier, skipping")
+                    return
+                }
+                MissingAction.STUB -> {
+                    if (identifier !is Identifier.Versioned)
+                        throw IllegalStateException("Cannot generate sub for unversioned identifier $identifier")
+                    this.logger.warn("- Generating stub for library $identifier")
+                    val pomData = generatePom(LibrarySourceEntry.builder(identifier)
+                        .packaging(LibrarySourcePackaging.POM)
+                        .build()
+                    )
+                    ByteArrayInputStream(pomData).use { src ->
+                        pipeAndHash(src, storageSpec!!.pom, FileHashAlgorithm.SHA1, null)
+                    }
+                    return
+                }
             }
 
         // Check if the library was already fetched, if a fully qualified identifier is newly available
@@ -102,14 +116,14 @@ class LibraryResolver(
             // Recurse
             if (entry.identifier.classifier != null) {
                 // Try to fetch parents when a classifier is set
-                fetchContent(entry.identifier.withClassifier(null), IdentifierStack(), true)
+                fetchContent(entry.identifier.withClassifier(null), IdentifierStack(), MissingAction.STUB)
             }
             val depends = entry.depends
             if (depends.isNotEmpty()) {
                 parents.push(identifier)
                 for (depend in depends) {
                     this.logger.debug("Resolving depend: $depend")
-                    fetchContent(depend, parents, true)
+                    fetchContent(depend, parents, MissingAction.SKIP)
                 }
                 parents.pop()
             }
@@ -264,6 +278,12 @@ class LibraryResolver(
     }
 
     //
+
+    private enum class MissingAction {
+        SKIP,
+        STUB,
+        FAIL
+    }
 
     private class IdentifierStack {
 

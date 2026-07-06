@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "io.github.wasabithumb"
-version = "0.1.1"
+version = "0.1.2"
 description = "Provides Minecraft modding APIs for modern versions with minimal drama"
 
 repositories {
