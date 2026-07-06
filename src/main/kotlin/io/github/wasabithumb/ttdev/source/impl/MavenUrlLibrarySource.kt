@@ -40,7 +40,7 @@ import java.util.regex.Pattern
 class MavenUrlLibrarySource(
     val url: String,
     @Language("RegExp") groupRegex: String = ".*",
-    val eagerJar: Boolean = false
+    val eagerJar: Boolean = true
 ) : LibrarySource {
 
     private val groupPattern: Pattern = Pattern.compile(groupRegex)
@@ -82,9 +82,6 @@ class MavenUrlLibrarySource(
         for (dep in model.dependencies) {
             val scope = dep.scope
             if (scope != null && scope != "compile" && scope != "provided") continue
-            if (dep.version == null) {
-                println("WARNING: no version for dependency ${dep.artifactId} in ${identifier}")
-            }
             builder.depends(Identifier.of(dep.groupId, dep.artifactId, dep.version, dep.classifier))
         }
 

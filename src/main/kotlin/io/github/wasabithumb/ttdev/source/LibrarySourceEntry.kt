@@ -29,15 +29,27 @@ data class LibrarySourceEntry internal constructor(
     val javadoc: LibrarySourceArtifact?
 ) : Identified<Identifier.Versioned> {
 
+    fun toBuilder(): Builder {
+        val ret = Builder(this.identifier)
+        ret.depends.addAll(this.depends)
+        ret.packaging = this.packaging
+        ret.artifact = this.artifact
+        ret.sources = this.sources
+        ret.javadoc = this.javadoc
+        return ret
+    }
+
+    //
+
     class Builder(
         private val identifier: Identifier.Versioned
     ) {
 
-        private val depends: MutableSet<Identifier> = mutableSetOf()
-        private var packaging: LibrarySourcePackaging? = null
-        private var artifact: LibrarySourceArtifact? = null
-        private var sources: LibrarySourceArtifact? = null
-        private var javadoc: LibrarySourceArtifact? = null
+        internal val depends: MutableSet<Identifier> = mutableSetOf()
+        internal var packaging: LibrarySourcePackaging? = null
+        internal var artifact: LibrarySourceArtifact? = null
+        internal var sources: LibrarySourceArtifact? = null
+        internal var javadoc: LibrarySourceArtifact? = null
 
         //
 

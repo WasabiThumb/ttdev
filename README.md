@@ -47,3 +47,17 @@ dependencies {
 > TTDev also supports Providers, so you can declare
 > ``ttdev.minecraftClient(libs.versions.minecraft)`` or
 > similar.
+
+## FAQ
+
+### I'm getting a ``No source could resolve transient library`` error!
+This is normal and should be expected. What this means is that
+a target, such as the Fabric API, depends on a library that is
+not contained within its source (the Fabric maven repo). This is
+often the case. It's important that you keep ``mavenCentral()``
+in your ``repositories`` block such that those transient dependencies
+can be resolved in the Maven Central repository. This message
+exists to debug cases where a transient library actually **should** 
+have been successfully resolved. This message may be removed in the
+future.
+

@@ -39,6 +39,8 @@ sealed class Identifier {
 
     abstract fun withoutVersion(): Unversioned
 
+    abstract fun withClassifier(classifier: String?): Identifier
+
     abstract fun matches(other: Identifier): Boolean
 
     protected abstract fun chars(): IntStream
@@ -97,6 +99,11 @@ sealed class Identifier {
             return this
         }
 
+        override fun withClassifier(classifier: String?): Unversioned {
+            if (Objects.equals(this.classifier, classifier)) return this
+            return Unversioned(this.group, this.name, classifier)
+        }
+
         override fun matches(other: Identifier): Boolean {
             return this.group == other.group &&
                     this.name == other.name &&
@@ -132,6 +139,11 @@ sealed class Identifier {
 
         override fun withoutVersion(): Unversioned {
             return Unversioned(this.group, this.name, this.classifier)
+        }
+
+        override fun withClassifier(classifier: String?): Versioned {
+            if (Objects.equals(this.classifier, classifier)) return this
+            return Versioned(this.group, this.name, this.version, classifier)
         }
 
         override fun matches(other: Identifier): Boolean {

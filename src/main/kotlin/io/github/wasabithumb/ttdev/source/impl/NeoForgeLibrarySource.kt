@@ -17,6 +17,7 @@
 package io.github.wasabithumb.ttdev.source.impl
 
 import io.github.wasabithumb.ttdev.id.Identifier
+import io.github.wasabithumb.ttdev.id.StandardIdentifiers
 import io.github.wasabithumb.ttdev.source.LibrarySource
 import io.github.wasabithumb.ttdev.source.LibrarySourceEntry
 import io.github.wasabithumb.ttdev.source.LibrarySourcePackaging
@@ -31,7 +32,15 @@ class NeoForgeLibrarySource(
 
     override fun resolve(identifier: Identifier): LibrarySourceEntry? {
         if (STUBBED.contains(identifier.withoutVersion())) return newStub(identifier)
-        return this.maven.resolve(identifier)
+        val ret = this.maven.resolve(identifier) ?: return null
+        if (!StandardIdentifiers.NEOFORGE.matches(identifier)) return ret
+        // Add the universal JAR as an artifact
+        val universal = this.resolve(identifier.withClassifier("universal"))
+            ?: throw IllegalStateException("Universal JAR could not be resolved")
+        return ret.toBuilder()
+            .packaging(universal.packaging)
+            .artifact(universal.artifact)
+            .build()
     }
 
     //

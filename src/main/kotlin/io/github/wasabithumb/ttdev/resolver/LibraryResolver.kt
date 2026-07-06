@@ -100,6 +100,10 @@ class LibraryResolver(
             this.fetchContentCacheMiss(entry, storageSpec)
 
             // Recurse
+            if (entry.identifier.classifier != null) {
+                // Try to fetch parents when a classifier is set
+                fetchContent(entry.identifier.withClassifier(null), IdentifierStack(), true)
+            }
             val depends = entry.depends
             if (depends.isNotEmpty()) {
                 parents.push(identifier)
@@ -181,7 +185,7 @@ class LibraryResolver(
         for (part in identifier.toPath()) head = head.resolve(part)
         val home = head
         val title = "${identifier.name}-${identifier.version}"
-        return LibraryStorageSpec(home, title)
+        return LibraryStorageSpec(home, title, identifier.classifier)
     }
 
     private fun generatePom(entry: LibrarySourceEntry): ByteArray {
@@ -208,6 +212,13 @@ class LibraryResolver(
                 out.write(version)
                 out.write("</version>\n")
 
+                val classifier = entry.identifier.classifier
+                if (classifier != null) {
+                    out.write("\t<classifier>")
+                    out.write(classifier)
+                    out.write("</classifier>\n")
+                }
+
                 val packaging = entry.packaging
                 out.write("\t<packaging>")
                 out.write(packaging.identifier)
@@ -218,6 +229,7 @@ class LibraryResolver(
                     val depGroup = dep.group
                     val depName = dep.name
                     val depVersion = dep.version
+                    val depClassifier = dep.classifier
                     out.write("\t\t<dependency>\n")
 
                     out.write("\t\t\t<groupId>")
@@ -232,6 +244,12 @@ class LibraryResolver(
                         out.write("\t\t\t<version>")
                         out.write(depVersion)
                         out.write("</version>\n")
+                    }
+
+                    if (depClassifier != null) {
+                        out.write("\t\t\t<classifier>")
+                        out.write(depClassifier)
+                        out.write("</classifier>\n")
                     }
 
                     out.write("\t\t\t<scope>compile</scope>\n")
@@ -277,18 +295,19 @@ class LibraryResolver(
 
     private data class LibraryStorageSpec(
         val home: Path,
-        val title: String
+        val title: String,
+        val classifier: String?
     ) {
 
         val pom: Path
             get() = this.file("pom")
 
         fun file(ext: String, classifier: String? = null): Path {
-            return if (classifier == null) {
-                this.home.resolve("${this.title}.$ext")
-            } else {
-                this.home.resolve("${this.title}-$classifier.$ext")
-            }
+            val sb = StringBuilder(this.title)
+            this.classifier?.let { sb.append('-').append(it) }
+            classifier?.let { sb.append('-').append(it) }
+            sb.append('.').append(ext)
+            return this.home.resolve(sb.toString())
         }
 
         fun isPopulated(): Boolean {
