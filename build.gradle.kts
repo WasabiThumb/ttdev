@@ -26,7 +26,7 @@ kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_25
         freeCompilerArgs = listOf(
-            "-jvm-default=all",
+            "-jvm-default=enable",
             "-Xjdk-release=25"
         )
     }
