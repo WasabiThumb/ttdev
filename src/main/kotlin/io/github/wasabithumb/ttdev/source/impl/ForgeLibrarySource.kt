@@ -33,10 +33,15 @@ class ForgeLibrarySource(
         if (identifier !is Identifier.Versioned) throw IllegalArgumentException("Source does not accept unversioned identifiers (got $identifier)")
         if (FORGE_GROUP != identifier.group) return null
 
-        // BOM
+        // Artificial POM
         if (FORGE_NAME == identifier.name && identifier.classifier == null) {
+            val universal = this.resolve(identifier.withClassifier("universal"))
+                ?: throw IllegalStateException("Failed to resolve universal JAR")
+
             val version = identifier.version
             val builder = LibrarySourceEntry.builder(identifier)
+            builder.packaging(universal.packaging)
+            builder.artifact(universal.artifact)
             for (name in CORE) builder.depends(Identifier.of(FORGE_GROUP, name, version))
             return builder.build()
         }
