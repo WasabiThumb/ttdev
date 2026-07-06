@@ -18,7 +18,7 @@ more reliably than existing plugins by minimizing labor and caching eagerly.
 ```kotlin
 plugins {
     id("java")
-    id("io.github.wasabithumb.ttdev") version "0.1.1"
+    id("io.github.wasabithumb.ttdev") version "0.1.2"
 }
 
 repositories {
