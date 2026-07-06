@@ -1,0 +1,14 @@
+[plugins]
+indra             = { id = "net.kyori.indra",                          version.ref = "indra" }
+indra-publishing  = { id = "net.kyori.indra.publishing.gradle-plugin", version.ref = "indra" }
+indra-licenser    = { id = "net.kyori.indra.licenser.spotless",        version.ref = "indra" }
+gradle-publish    = { id = "com.gradle.plugin-publish",                version     = "2.1.1" }
+
+[versions]
+indra = "4.0.0"
+gson = "2.14.0"
+maven = "3.9.16"
+
+[libraries]
+gson       = { group = "com.google.code.gson", name = "gson",       version.ref = "gson"  }
+maven-core = { group = "org.apache.maven",     name = "maven-core", version.ref = "maven" }
